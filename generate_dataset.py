@@ -18,6 +18,11 @@ with open('dp_large.graph','w') as f:
     for i in range(1,333334):
         f.write(f'{3*i-1} {3*i} {3*i+1}\n')
 
+# correctness purpose
+with open('dp_special.graph', 'w') as f:
+    for i in range(1,101):
+        f.write(f'{3*i-1} {3*i} {3*i+1}\n')
+
 '''
 BRANCH AND BOUND
 '''
