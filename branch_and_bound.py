@@ -2,34 +2,18 @@
 # https://github.com/sangyh/minimum-vertex-cover
 
 # UNTUK MENJALANKAN KODE, GUNAKAN:
-# python branch_and_bound.py -inst bnb_small.graph -time 3600
-# python branch_and_bound.py -inst bnb_medium.graph -time 3600
-# python branch_and_bound.py -inst bnb_large.graph -time 3600
+# python branch_and_bound.py -inst bnb_small.graph
+# python branch_and_bound.py -inst bnb_medium.graph
+# python branch_and_bound.py -inst bnb_large.graph
 
 # JANGAN LUPA UNTUK lakukan 'pip install networkx' KARENA
 # PROGRAM PERLU MODUL TERSEBUT
-
-'''This file implements the Branch and Bound method to find minimum vertex cover for a given input graph.
-
-Author: Sangy Hanuamsagar, Team 25
-
-Instructions: The folder structure is as follows: Project Directory contains   [Code,Data,Output]. The code files must be pasted in Code folder.
-
-Language: Python 3
-Executable: python Code/BnB_group_25.py -inst Data/karate.graph -alg BnB -time 600 -seed 100 
-The seed value will not be used for the BnB implementaiton.
-
-The output will be two files: *.sol and *.trace created in the project Output folder
-*.sol --- record the size of optimum vertex cover and the nodes in it.
-*.trace --- record all the optimum solution found 
-            during the search and the time it was found
-'''
 
 import argparse
 import networkx as nx
 import operator
 import time
-import os
+import tracemalloc
 from math import ceil
 
 # FUNCTION FOR PARSING INPUT FILES
@@ -101,11 +85,10 @@ When Frontier Set==empty, the whole graph and all possible solutions have been e
 End
 """
 
-def BnB(G, T):
-	#RECORD START TIME
+def BnB(G):
+	#RECORD START TIME AND MEMORY
 	start_time=time.time()
-	end_time=start_time
-	delta_time=end_time-start_time
+	
 	times=[]    #list of times when solution is found, tuple=(VC size,delta_time)
 
 	# INITIALIZE SOLUTION VC SETS AND FRONTIER SET TO EMPTY SET
@@ -121,19 +104,23 @@ def BnB(G, T):
 	CurG = G.copy()  # make a copy of G
 	# sort dictionary of degree of nodes to find node with highest degree
 	v = find_maxdeg(CurG)
-	#v=(1,0)
 
 	# APPEND (V,1,(parent,state)) and (V,0,(parent,state)) TO FRONTIER
 	Frontier.append((v[0], 0, (-1, -1)))  # tuples of node,state,(parent vertex,parent vertex state)
 	Frontier.append((v[0], 1, (-1, -1)))
-	# print(Frontier)
 
-	while Frontier!=[] and delta_time<T:
+	while Frontier!=[]:
 		(vi,state,parent)=Frontier.pop() #set current node to last element in Frontier
 		
-		#print('New Iteration(vi,state,parent):', vi, state, parent)
 		backtrack = False
 
+
+		#print(parent[0])
+		# print('Neigh',vi,neighbor)
+		# print('Remaining no of edges',CurG.number_of_edges())
+
+		
+		
 		#print(parent[0])
 		# print('Neigh',vi,neighbor)
 		# print('Remaining no of edges',CurG.number_of_edges())
@@ -145,54 +132,34 @@ def BnB(G, T):
 				CurVC.append((node, 1))
 				CurG.remove_node(node)  # node is in VC, remove neighbors from CurG
 		elif state == 1:  # if vi is selected, state of all neighbors=0
-			# print('curg',CurG.nodes())
 			CurG.remove_node(vi)  # vi is in VC,remove node from G
-			#print('new curG',CurG.edges())
 		else:
 			pass
 
 		CurVC.append((vi, state))
 		CurVC_size = VC_Size(CurVC)
-		#print('CurVC Size', CurVC_size)
-		# print(CurG.number_of_edges())
-		# print(CurG.edges())
 
-		# print('no of edges',CurG.number_of_edges())
 		if CurG.number_of_edges() == 0:  # end of exploring, solution found
-			#print('In FIRST IF STATEMENT')
 			if CurVC_size < UpperBound:
 				OptVC = CurVC.copy()
-				#print('OPTIMUM:', OptVC)
 				print('Current Opt VC size', CurVC_size)
 				UpperBound = CurVC_size
-				#print('New VC:',OptVC)
 				times.append((CurVC_size,time.time()-start_time))
 			backtrack = True
-			#print('First backtrack-vertex-',vi)
 				
 		else:   #partial solution
-			#maxnode, maxdegree = find_maxdeg(CurG)
 			CurLB = Lowerbound(CurG) + CurVC_size
-			#print(CurLB)
-			#CurLB=297
-
 			if CurLB < UpperBound:  # worth exploring
-				# print('upper',UpperBound)
 				vj = find_maxdeg(CurG)
 				Frontier.append((vj[0], 0, (vi, state)))#(vi,state) is parent of vj
 				Frontier.append((vj[0], 1, (vi, state)))
-				# print('Frontier',Frontier)
 			else:
 				# end of path, will result in worse solution,backtrack to parent
 				backtrack=True
-				#print('Second backtrack-vertex-',vi)
-
 
 		if backtrack==True:
-			#print('Hello. CurNode:',vi,state)
 			if Frontier != []:	#otherwise no more candidates to process
 				nextnode_parent = Frontier[-1][2]	#parent of last element in Frontier (tuple of (vertex,state))
-				#print(nextnode_parent)
 
 				# backtrack to the level of nextnode_parent
 				if nextnode_parent in CurVC:
@@ -216,11 +183,6 @@ def BnB(G, T):
 					CurG = G.copy()
 				else:
 					print('error in backtracking step')
-
-		end_time=time.time()
-		delta_time=end_time-start_time
-		if delta_time>T:
-			print('Cutoff time reached')
 
 	return OptVC,times
 
@@ -261,7 +223,7 @@ def VC_Size(VC):
 ##################################################################
 # MAIN BODY OF CODE
 
-def main(inputfile, cutoff):
+def main(inputfile):
 	#READ INPUT FILE INTO GRAPH
 	adj_list = parse(inputfile)	
 	# CONSTRUCT THE GRAPH BASED ON ADJACENT LIST
@@ -273,24 +235,29 @@ def main(inputfile, cutoff):
 	print('No of nodes in G:', g.number_of_nodes(),
 		  '\nNo of Edges in G:', g.number_of_edges())
 
-	Sol_VC,times = BnB(g, cutoff)
+	start = time.time()
+	tracemalloc.start()
+	Sol_VC,times = BnB(g)
+	end = time.time()
+	mem = tracemalloc.get_traced_memory()
+	tracemalloc.stop()
 
 	#DELETE FALSE NODES (STATE=0) IN OBTAINED SoL_VC
 	for element in Sol_VC:
 		if element[1]==0:
 			Sol_VC.remove(element)
 
-	print('Solution VC:', Sol_VC, VC_Size(Sol_VC))
-	print('Times',times)
+	print('Minimum Size Vertex:', VC_Size(Sol_VC))
+	print(f"Time needed: {end-start}")
+	print(f"Memory needed: {mem[1]}")
+	print()
 
 if __name__ == '__main__':
 	#create parser; example: python bnb.py --datafile ../Data/karate.graph --cutoff_time 200
 	parser=argparse.ArgumentParser(description='Input parser for BnB')
 	parser.add_argument('-inst',action='store',type=str,required=True,help='Inputgraph datafile')
-	parser.add_argument('-time',action='store',default=1000,type=int,required=True,help='Cutoff running time for algorithm')
 	args=parser.parse_args()
 
 	graph_file = args.inst
-	cutoff = args.time
 
-	main(graph_file, cutoff)
+	main(graph_file)
