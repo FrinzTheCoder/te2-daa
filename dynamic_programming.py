@@ -3,6 +3,8 @@
 
 # Python3 implementation for the above approach
 
+import time
+
 def addEdge(adj, x, y):
 	adj[x].append(y)
 	adj[y].append(x)
@@ -34,36 +36,38 @@ def minSizeVertexCover(adj, N):
 	dfs(adj, dp, 1, -1)
 
 	# printing minimum size vertex cover
-	print(dp)
 	print(min(dp[1][0], dp[1][1]))
 
-
-# Driver Code
-"""
-		1
-		/ \
-	2	 7
-	/ \
-	3 6
-/|\ 
-4 8 5
-"""
-# number of nodes in the tree
-N = 13
-
-# adjacency list representation of the tree
+'''
+SEGMENT: SMALL DATASET (10.000)
+'''
+N = 10000
 adj = [[] for i in range(N+1)]
-addEdge(adj, 1, 2)
-addEdge(adj, 1, 3)
-addEdge(adj, 1, 4)
-addEdge(adj, 2, 5)
-addEdge(adj, 2, 6)
-addEdge(adj, 2, 7)
-addEdge(adj, 3, 8)
-addEdge(adj, 3, 9)
-addEdge(adj, 3, 10)
-addEdge(adj, 4, 11)
-addEdge(adj, 4, 12)
-addEdge(adj, 4, 13)
 
+with open('dp_small.graph') as f:
+	for i in range(1, 3334):
+		vertex_adjacency = f.readline().split()
+		addEdge(adj, i, int(vertex_adjacency[0]))
+		addEdge(adj, i, int(vertex_adjacency[1]))
+		addEdge(adj, i, int(vertex_adjacency[2]))
+
+print("Minimum Size Vertex Cover (Small): ",end="")
+start = time.time()
+minSizeVertexCover(adj, N)
+print(f"Time needed: {time.time()-start}")
+
+'''
+SEGMENT: LARGE DATASET (1.000.000)
+'''
+N = 1000000
+adj = [[] for i in range(N+1)]
+
+with open('dp_large.graph') as f:
+	for i in range(1, 333334):
+		vertex_adjacency = f.readline().split()
+		addEdge(adj, i, int(vertex_adjacency[0]))
+		addEdge(adj, i, int(vertex_adjacency[1]))
+		addEdge(adj, i, int(vertex_adjacency[2]))
+
+print("Minimum Size Vertex Cover (Large): ",end="")
 minSizeVertexCover(adj, N)
