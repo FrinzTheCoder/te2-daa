@@ -1,3 +1,6 @@
+# Kode ini diambil dari sumber berikut:
+# https://www.geeksforgeeks.org/vertex-cover-problem-dynamic-programming-solution-for-tree/
+
 # Python3 implementation for the above approach
 
 def addEdge(adj, x, y):
@@ -31,6 +34,7 @@ def minSizeVertexCover(adj, N):
 	dfs(adj, dp, 1, -1)
 
 	# printing minimum size vertex cover
+	print(dp)
 	print(min(dp[1][0], dp[1][1]))
 
 
@@ -45,16 +49,21 @@ def minSizeVertexCover(adj, N):
 4 8 5
 """
 # number of nodes in the tree
-N = 8
+N = 13
 
 # adjacency list representation of the tree
 adj = [[] for i in range(N+1)]
 addEdge(adj, 1, 2)
-addEdge(adj, 1, 7)
-addEdge(adj, 2, 3)
+addEdge(adj, 1, 3)
+addEdge(adj, 1, 4)
+addEdge(adj, 2, 5)
 addEdge(adj, 2, 6)
-addEdge(adj, 3, 4)
+addEdge(adj, 2, 7)
 addEdge(adj, 3, 8)
-addEdge(adj, 3, 5)
+addEdge(adj, 3, 9)
+addEdge(adj, 3, 10)
+addEdge(adj, 4, 11)
+addEdge(adj, 4, 12)
+addEdge(adj, 4, 13)
 
 minSizeVertexCover(adj, N)
